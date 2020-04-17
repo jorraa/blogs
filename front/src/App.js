@@ -14,6 +14,7 @@ const App = () => {
   const [newLikes, setNewLikes] = useState('0')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
+  const [infoMessage, setInfoMessage] = useState(null)
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
@@ -43,17 +44,21 @@ const App = () => {
       title: newTitle,
       author: newAuthor,
       url: newUrl,
-      likes: newLikes
+      likes: 0
     }
   
     blogService
-      .create(blogObject)
+      .createBlog(blogObject)
       .then(returnedBlog => {
         setBlogs(blogs.concat(returnedBlog))
         setNewAuthor('')
         setNewTitle('')
         setNewUrl('')
         setNewLikes(0)
+        setInfoMessage(`a new blog ${returnedBlog.title} by ${user.name} added `)
+        setTimeout(() => {
+          setInfoMessage(null)
+        }, 3000)
       })
   }
 
@@ -91,7 +96,7 @@ const App = () => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      setErrorMessage('wrong credentials')
+      setErrorMessage('wrong username or password')
       setTimeout(() => {
         setErrorMessage(null)
       }, 5000)
@@ -141,30 +146,33 @@ const App = () => {
 
   const blogForm = () => (
     <form onSubmit={addBlog}>
-      Title: <input
+      <p> 
+        Title: <input
         value={newTitle}
         onChange={handleTitleChange}
-      />
-      Author: <input
-        value={newAuthor}
-        onChange={handleAuthorChange}
-      />
+        />
+      </p>
+      <p>
+        Author: <input
+          value={newAuthor}
+          onChange={handleAuthorChange}
+        />
+      </p>
+      <p>
         Url: <input
         value={newUrl}
         onChange={handleUrlChange}
-      />
-      Title: <input
-        value={newLikes}
-        onChange={handleLikesChange}
-      />
-
-      <button type="submit">save</button>
+        />
+      </p>
+      <button type="submit">create</button>
     </form>  
   )
+
   return (
     <div>
       <h1>Blogs</h1>
-      <Notification message={errorMessage} />
+      <Notification message={errorMessage} className='error'/>
+      <Notification message={infoMessage} className='info'/>
 
       {user === null ?
         loginForm() :
@@ -172,6 +180,7 @@ const App = () => {
           <p>{user.name} logged in 
             <Button handleClick={handleLogout} text='logout' />
           </p>  
+          {blogForm()}
           {blogs.map(blog =>
             <Blog key={blog.id} blog={blog} />
           )}

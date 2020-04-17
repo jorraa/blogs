@@ -32,4 +32,21 @@ router.post('/', async (request, response) => {
   response.json(savedUser)
 })
 
+router.get('/', async (request, response) => {
+  const users = await User
+    .find({})
+    .populate('blogs', { title: 1, url: 1,  likes: 1, author: 1 })
+
+  response.json(users.map(u => u.toJSON()))
+})
+
+router.get('/byusername/:username', async (request, response) => {
+  console.log('username in byusername', request.params.username)
+  const users = await User
+    .findOne({ username: request.params.username })
+    .populate('blogs', { title: 1, url: 1,  likes: 1, author: 1 })
+
+  response.json(users.map(u => u.toJSON()))
+})
+
 module.exports = router
