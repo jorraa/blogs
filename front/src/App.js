@@ -1,25 +1,29 @@
 import React, { useState, useEffect } from 'react'
+import BlogForm from './components/BlogForm'
+import LoginForm from './components/LoginForm'
+import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 import Blog from './components/Blog'
 import Button from './components/Button'
-import Notification from './components/Notification'
 import Footer from './components/Footer'
 import blogService from './services/blogs'
 import loginService from './services/login' 
 
 const App = () => {
   const [blogs, setBlogs] = useState([]) 
-  const [newTitle, setNewTitle] = useState('')
-  const [newAuthor, setNewAuthor] = useState('')
-  const [newUrl, setNewUrl] = useState('')
-  const [newLikes, setNewLikes] = useState('0')
   const [showAll, setShowAll] = useState(true)
   const [errorMessage, setErrorMessage] = useState(null)
   const [infoMessage, setInfoMessage] = useState(null)
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-    
+  const [loginVisible, setLoginVisible] = useState(false)
+
+  const blogFormRef = React.createRef()
+
   const localStoreKey = 'loggedBlogappUser'
+
+
 
   useEffect(() => {
     blogService
@@ -38,23 +42,13 @@ const App = () => {
     }
   }, [])
 
-  const addBlog = (event) => {
-    event.preventDefault()
-    const blogObject = {
-      title: newTitle,
-      author: newAuthor,
-      url: newUrl,
-      likes: 0
-    }
-  
+  const createBlog = (blogObject) => {
+    blogFormRef.current.toggleVisibility()
     blogService
       .createBlog(blogObject)
       .then(returnedBlog => {
         setBlogs(blogs.concat(returnedBlog))
-        setNewAuthor('')
-        setNewTitle('')
-        setNewUrl('')
-        setNewLikes(0)
+
         setInfoMessage(`a new blog ${returnedBlog.title} by ${user.name} added `)
         setTimeout(() => {
           setInfoMessage(null)
@@ -68,11 +62,10 @@ const App = () => {
       const user = await loginService.doLogin(
         username, password
       )
-      setUser(user)
-      window.localStorage.setItem(localStoreKey, JSON.stringify(user)
-      ) 
-      blogService.setToken(user.token)
+      window.localStorage.setItem(localStoreKey, JSON.stringify(user))
 
+      blogService.setToken(user.token)
+      setUser(user)
       setUsername('')
       setPassword('')
     } catch (exception) {
@@ -83,70 +76,28 @@ const App = () => {
     }
   }
 
-  const handleTitleChange = (event) => {
-    setNewTitle(event.target.value)
-  }
-  const handleAuthorChange = (event) => {
-    setNewAuthor(event.target.value)
-  }
-  const handleUrlChange = (event) => {
-    setNewUrl(event.target.value)
-  }
-  const handleLikesChange = (event) => {
-    setNewLikes(event.target.value)
-  }
+  const loginForm = () => (
+    <Togglable buttonLabel='login'>
+      <LoginForm
+        username={username}
+        password={password}
+        handleUsernameChange={({ target }) => setUsername(target.value)}
+        handlePasswordChange={({ target }) => setPassword(target.value)}
+        handleSubmit={handleLogin}
+      />
+    </Togglable>
+  )
+
+  const blogForm = () => (
+    <Togglable buttonLabel='new blog' ref={blogFormRef}>
+      <BlogForm createBlog={createBlog} />
+    </Togglable>
+  )
 
   const handleLogout = () => {
     localStorage.removeItem(localStoreKey)
     setUser(null)
   }
-  const loginForm = () => (
-    <form onSubmit={handleLogin}>
-      <div>
-        username
-          <input
-          type="text"
-          value={username}
-          name="Username"
-          onChange={({ target }) => setUsername(target.value)}
-        />
-      </div>
-      <div>
-        password
-          <input
-          type="password"
-          value={password}
-          name="Password"
-          onChange={({ target }) => setPassword(target.value)}
-        />
-      </div>
-      <button type="submit">login</button>
-    </form>      
-  )
-
-  const blogForm = () => (
-    <form onSubmit={addBlog}>
-      <p> 
-        Title: <input
-        value={newTitle}
-        onChange={handleTitleChange}
-        />
-      </p>
-      <p>
-        Author: <input
-          value={newAuthor}
-          onChange={handleAuthorChange}
-        />
-      </p>
-      <p>
-        Url: <input
-        value={newUrl}
-        onChange={handleUrlChange}
-        />
-      </p>
-      <button type="submit">create</button>
-    </form>  
-  )
 
   return (
     <div>
@@ -172,3 +123,34 @@ const App = () => {
 }
 
 export default App 
+/*
+  const blogForm = () => {
+    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
+    const showWhenVisible = { display: loginVisible ? '' : 'none' }
+    return (
+      <form onSubmit={addBlog}>
+        <p> 
+          Title: <input
+          value={newTitle}
+          onChange={handleTitleChange}
+          />
+        </p>
+        <p>
+          Author: <input
+            value={newAuthor}
+            onChange={handleAuthorChange}
+          />
+        </p>
+        <p>
+          Url: <input
+          value={newUrl}
+          onChange={handleUrlChange}
+          />
+        </p>
+        <button type="submit">create</button>
+      </form>  
+    )
+    */
+
+
+
