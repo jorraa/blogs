@@ -1,9 +1,15 @@
 import React from 'react'
 
-const Button = ({handleClick, text}) => (
-    <button onClick={handleClick}>
-      {text}
-    </button>
-  )
+import PropTypes from 'prop-types'
 
-  export default Button
+const Button = ({ handleClick, text }) => (
+  <button onClick={handleClick}>
+    {text}
+  </button>
+)
+
+Button.propTypes = {
+  handleClick: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+}
+export default Button

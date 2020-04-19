@@ -3,21 +3,20 @@ import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
-import Blog from './components/Blog'
+import TogglableBlog from './components/TogglableBlog'
+//import Blog from './components/Blog'
 import Button from './components/Button'
 import Footer from './components/Footer'
 import blogService from './services/blogs'
-import loginService from './services/login' 
+import loginService from './services/login'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]) 
-  const [showAll, setShowAll] = useState(true)
+  const [blogs, setBlogs] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
   const [infoMessage, setInfoMessage] = useState(null)
-  const [username, setUsername] = useState('') 
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
-  const [loginVisible, setLoginVisible] = useState(false)
 
   const blogFormRef = React.createRef()
 
@@ -55,7 +54,7 @@ const App = () => {
         }, 3000)
       })
   }
- 
+
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
@@ -94,6 +93,28 @@ const App = () => {
     </Togglable>
   )
 
+  const handleLikes = async (event) => {
+    event.preventDefault()
+    const blogId= event.target.id
+    const blog = blogs.find(blog => blog.id === blogId)
+
+    const returnedBlog = await blogService.updateBlog(blog)
+
+    setBlogs(blogs.map(blog =>
+      blog.id !== blogId ? blog : returnedBlog))
+  }
+
+  const handleRemoveBlog = async (blog) => {
+    await blogService.removeBlog(blog)
+
+    setBlogs(blogs.filter(b => b.id !== blog.id))
+    // eslint-disable-next-line no-undef
+    setInfoMessage(`${blog.title} by ${blog.author} removed!`)
+    setTimeout(() => {
+      setInfoMessage(null)
+    }, 3000)
+  }
+
   const handleLogout = () => {
     localStorage.removeItem(localStoreKey)
     setUser(null)
@@ -108,12 +129,17 @@ const App = () => {
       {user === null ?
         loginForm() :
         <div>
-          <p>{user.name} logged in 
+          <p>{user.name} logged in
             <Button handleClick={handleLogout} text='logout' />
-          </p>  
+          </p>
           {blogForm()}
-          {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
+          {blogs.sort((a, b) => (a.likes > b.likes) ? -1 : 1).map(blog =>
+            <>
+              <TogglableBlog blog={blog}
+                onLikesClick={handleLikes}
+                username={user.username}
+                onRemove={handleRemoveBlog}/>
+            </>
           )}
         </div>
       }
@@ -122,35 +148,4 @@ const App = () => {
   )
 }
 
-export default App 
-/*
-  const blogForm = () => {
-    const hideWhenVisible = { display: loginVisible ? 'none' : '' }
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
-    return (
-      <form onSubmit={addBlog}>
-        <p> 
-          Title: <input
-          value={newTitle}
-          onChange={handleTitleChange}
-          />
-        </p>
-        <p>
-          Author: <input
-            value={newAuthor}
-            onChange={handleAuthorChange}
-          />
-        </p>
-        <p>
-          Url: <input
-          value={newUrl}
-          onChange={handleUrlChange}
-          />
-        </p>
-        <button type="submit">create</button>
-      </form>  
-    )
-    */
-
-
-
+export default App
