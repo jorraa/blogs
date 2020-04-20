@@ -30,10 +30,17 @@ router.delete('/:id', async (request, response) => {
 })
 
 router.put('/:id', async (request, response) => {
-  const blog = request.body
+  const body = request.body
+  if(body.user === null){
+    return response.status(401).json({ error: 'user.id is null while updating blog likes! Check populate' })
+  }
+  const blog = { title: body.title, author: body.author, url: body.url,
+    likes: body.likes, user: body.user.id }
 
-  const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
-  response.json(updatedBlog.toJSON())
+  const updatedBlog = await Blog
+    .findByIdAndUpdate(request.params.id, blog, { new: true })
+    .populate('user', { username: 1, name: 1 })
+  return response.json(updatedBlog.toJSON())
 })
 
 router.post('/', async (request, response) => {
@@ -44,7 +51,7 @@ router.post('/', async (request, response) => {
   if (!request.token || !decodedToken.id) {
     return response.status(401).json({ error: 'token missing or invalid' })
   }
-console.log('decodedToken.id', decodedToken)
+
   const user = await User.findById(decodedToken.id)
 
   if (!blog.url || !blog.title) {
