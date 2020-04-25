@@ -7,9 +7,17 @@ const middleware = require('./utils/middleware')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
 const loginRouter = require('./controllers/login')
+//if (process.env.NODE_ENV === 'test') {
+const testingRouter = require('./controllers/testing')
+//}
+
 const mongoose = require('mongoose')
 
 const app = express()
+
+if (process.env.NODE_ENV === 'test') {
+  app.use('/api/testing', testingRouter)
+}
 
 mongoose.set('useCreateIndex', true)
 

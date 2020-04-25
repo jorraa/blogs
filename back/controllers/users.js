@@ -1,29 +1,30 @@
 const bcrypt = require('bcrypt')
-const router = require('express').Router()
+const usersRouter = require('express').Router()
 const User = require('../models/user')
 
-router.get('/', async (request, response) => {
+usersRouter.get('/', async (request, response) => {
   const users = await User
-    .find({})
-    .populate('blogs', { title: 1, url: 1,  likes: 1, author: 1 })
+    .find({}).populate('blogs', { title: 1, url: 1, likes: 1 })
 
   response.json(users.map(u => u.toJSON()))
 })
 
-router.post('/', async (request, response) => {
-  const { password, name, username } = request.body
+usersRouter.post('/', async (request, response) => {
+  const body = request.body
 
-  if ( !password || password.length<3 ) {
-    return response.status(400).send({
-      error: 'password must min length 3'
-    })
+  if(!body.password || body.password.length < 3 ){
+    return response.status(400).json({ error: 'passord must have at least 3 charachters' })
   }
+  //if(!body.username || body.username.length < 3 ){
+  //  return response.status(400).json({ error: 'username must have at least 3 charachters' })
+  //}
 
   const saltRounds = 10
-  const passwordHash = await bcrypt.hash(password, saltRounds)
+  const passwordHash = await bcrypt.hash(body.password, saltRounds)
 
   const user = new User({
-    username, name,
+    username: body.username,
+    name: body.name,
     passwordHash,
   })
 
@@ -32,21 +33,4 @@ router.post('/', async (request, response) => {
   response.json(savedUser)
 })
 
-router.get('/', async (request, response) => {
-  const users = await User
-    .find({})
-    .populate('blogs', { title: 1, url: 1,  likes: 1, author: 1 })
-
-  response.json(users.map(u => u.toJSON()))
-})
-
-router.get('/byusername/:username', async (request, response) => {
-  console.log('username in byusername', request.params.username)
-  const users = await User
-    .findOne({ username: request.params.username })
-    .populate('blogs', { title: 1, url: 1,  likes: 1, author: 1 })
-
-  response.json(users.map(u => u.toJSON()))
-})
-
-module.exports = router
+module.exports = usersRouter

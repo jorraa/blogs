@@ -1,16 +1,29 @@
 const mongoose = require('mongoose')
 
 const blogSchema = mongoose.Schema({
-  title: String,
-  author: String,
-  url: String,
-  likes: Number,
-  user:  {
+  title: {
+    type: String,
+    required: true,
+    minlength: 3
+  },
+  author: {
+    type: String,
+    required: true,
+    minlength: 2
+  },
+  url: {
+    type: String,
+    required: true
+  },
+  likes: {
+    type: Number,
+    default: 0
+  },
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }
 })
-
 blogSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString()
