@@ -15,9 +15,9 @@ const mongoose = require('mongoose')
 
 const app = express()
 
-if (process.env.NODE_ENV === 'test') {
-  app.use('/api/testing', testingRouter)
-}
+//if (process.env.NODE_ENV === 'test') {
+app.use('/api/testing', testingRouter)
+//}
 
 mongoose.set('useCreateIndex', true)
 

@@ -8,7 +8,6 @@ router.get('/', async (request, response) => {
 })
 
 router.post('/reset', async (request, response) => {
-  console.log('remove everything from Blog and User')
   await Blog.deleteMany({})
   await User.deleteMany({})
 
